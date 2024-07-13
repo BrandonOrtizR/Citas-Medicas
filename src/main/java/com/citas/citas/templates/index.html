@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Citas Médicas</title>
+</head>
+<body>
+<div class="container">
+    <h1>Lista de Citas Médicas</h1>
+
+    <div id="citasContainer">
+    </div>
+
+    <button id="crearNuevaCitaBtn">Crear Nueva Cita</button>
+</div>
+
+<script>
+    const BASE_URL = 'http://localhost:8080';
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const citasContainer = document.getElementById("citasContainer");
+        const crearNuevaCitaBtn = document.getElementById("crearNuevaCitaBtn");
+
+        function cargarCitas() {
+            fetch(`${BASE_URL}/api/citas`)
+                .then(response => response.json())
+                .then(data => {
+                    citasContainer.innerHTML = "";
+                    data.forEach(cita => {
+                        const citaHTML = `
+                            <div class="cita">
+                                <p><strong>ID:</strong> ${cita.id}</p>
+                                <p><strong>Consultorio:</strong> ${cita.consultorio.numero}, Piso ${cita.consultorio.piso}</p>
+                                <p><strong>Doctor:</strong> ${cita.doctor.nombreCompleto}</p>
+                                <p><strong>Horario:</strong> ${cita.horario}</p>
+                                <p><strong>Paciente:</strong> ${cita.paciente}</p>
+                                <div class="acciones">
+                                    <button onclick="editarCita(${cita.id})">Editar</button>
+                                    <button onclick="eliminarCita(${cita.id})">Eliminar</button>
+                                </div>
+                            </div>
+                        `;
+                        citasContainer.innerHTML += citaHTML;
+                    });
+                })
+                .catch(error => console.error("Error al cargar citas:", error));
+        }
+
+        crearNuevaCitaBtn.addEventListener("click", function() {
+            window.location.href = `${BASE_URL}/agregar-cita.html`;
+        });
+
+        cargarCitas();
+    });
+
+    // Función para eliminar una cita
+    function eliminarCita(id) {
+        if (confirm("¿Estás seguro que deseas eliminar esta cita?")) {
+            fetch(`${BASE_URL}/api/citas/${id}`, {
+                method: "DELETE"
+            })
+            .then(response => {
+                if (response.ok) {
+                    cargarCitas(); // Actualizar la lista de citas después de eliminar
+                } else {
+                    console.error("Error al eliminar cita");
+                }
+            })
+            .catch(error => console.error("Error al eliminar cita:", error));
+        }
+    }
+
+    // Función para editar una cita
+    function editarCita(id) {
+        window.location.href = `${BASE_URL}/editar-cita.html?id=${id}`;
+    }
+</script>
+</body>
+</html>
